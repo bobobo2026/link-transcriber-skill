@@ -2,7 +2,15 @@
 
 This skill is now published on ClawHub:
 
-- `https://clawhub.ai/bobobo2026/link-transcriber-skill-public`
+- `https://clawhub.ai/bobobo2026/link-transcriber`
+
+Canonical published slug:
+
+- `link-transcriber`
+
+Legacy published slug:
+
+- `link-transcriber-skill-public`
 
 - Canonical skill source: `SKILL.md`
 - Canonical UI metadata: `agents/openai.yaml`

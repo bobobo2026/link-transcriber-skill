@@ -18,7 +18,7 @@ For local smoke or a private deployment, you can still override the default:
 
 Published ClawHub page:
 
-- `https://clawhub.ai/bobobo2026/link-transcriber-skill-public`
+- `https://clawhub.ai/bobobo2026/link-transcriber`
 
 The skill workflow is:
 
@@ -44,13 +44,44 @@ Install from this GitHub repository, then restart Codex so it picks up the skill
 
 You can also open the published ClawHub page:
 
-- `https://clawhub.ai/bobobo2026/link-transcriber-skill-public`
+- `https://clawhub.ai/bobobo2026/link-transcriber`
 
 After installation, use it in natural language:
 
 ```text
 Use $link-transcriber to summarize this link: https://xhslink.com/o/23s4jTem6em
 ```
+
+Install directly from ClawHub into the Codex skills directory:
+
+```bash
+npx clawhub@latest --workdir ~/.codex --dir skills install link-transcriber --force
+```
+
+## Update
+
+Refresh an existing local installation to the latest published version:
+
+```bash
+bash scripts/update_local_skill.sh
+```
+
+Pin to a specific version when needed:
+
+```bash
+bash scripts/update_local_skill.sh 0.1.6
+```
+
+What the update script does:
+
+- installs the canonical slug `link-transcriber`
+- removes the legacy local directory `~/.codex/skills/link-transcriber-skill-public` if it exists
+- leaves one stable local entrypoint for Codex to discover
+
+## Troubleshooting
+
+- If you previously installed `link-transcriber-skill-public`, run `bash scripts/update_local_skill.sh` to migrate to the canonical local directory.
+- If you invoke Codex from a shell, quote or stdin-wrap prompts that contain `$link-transcriber` so your shell does not expand `$...` before Codex sees it.
 
 ## Behavior
 
@@ -83,4 +114,5 @@ python3 scripts/call_service_example.py 'https://xhslink.com/o/23s4jTem6em'
 - `SKILL.md` - canonical skill behavior
 - `agents/openai.yaml` - Codex UI metadata
 - `scripts/call_service_example.py` - transcribe + poll + summarize example
+- `scripts/update_local_skill.sh` - install or refresh the local Codex skill copy
 - `CLAWHUB.md` - ClawHub-oriented publish copy

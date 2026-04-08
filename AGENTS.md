@@ -46,12 +46,15 @@ ClawHub status:
 
 - CLI login is valid
 - publish succeeded on `2026-04-01`
+- canonical slug should match the skill name for new installs
 - published version:
-  - `0.1.0`
+  - `0.1.6`
 - published slug:
-  - `link-transcriber-skill-public`
+  - `link-transcriber`
 - published page:
-  - `https://clawhub.ai/bobobo2026/link-transcriber-skill-public`
+  - `https://clawhub.ai/bobobo2026/link-transcriber`
+- legacy published slug:
+  - `link-transcriber-skill-public`
 
 ## Source Of Truth
 
@@ -74,6 +77,7 @@ ClawHub-oriented copy:
 Smoke / example runner:
 
 - [scripts/call_service_example.py](/Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts/call_service_example.py)
+- [scripts/update_local_skill.sh](/Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts/update_local_skill.sh)
 
 ## Key Product Behavior
 
