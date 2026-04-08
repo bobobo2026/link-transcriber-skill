@@ -37,6 +37,9 @@ Hard requirements:
 - do not replace the trusted HTTPS origin with a raw IP unless the operator explicitly sets `LINK_SKILL_API_BASE_URL`
 - treat `skill/` in this workspace as the stable source of truth
 - do not fall back to `web/skill/` for current product behavior
+- when the user already provided a Douyin or Xiaohongshu link, do not ask for confirmation before executing the workflow
+- do not browse the link page and write a substitute summary when the transcription service fails
+- do not expose intermediate execution logs, search traces, or debugging steps in the final user-facing answer
 
 ## When To Use It
 
@@ -74,7 +77,8 @@ If the platform cannot be inferred reliably, ask the user to specify `douyin` or
 2. Infer `platform` from the link when possible.
 3. If `url` is missing, ask for it and stop.
 4. If `platform` cannot be inferred, ask for it and stop.
-5. Create a transcription task with `POST /api/service/transcriptions`:
+5. If the user already provided a supported link and the platform can be inferred, execute immediately without a confirmation round-trip.
+6. Create a transcription task with `POST /api/service/transcriptions`:
 
 Use `https://linktranscriber.store/linktranscriber-api` by default. If `LINK_SKILL_API_BASE_URL` is set, use that override instead.
 
@@ -85,11 +89,11 @@ Use `https://linktranscriber.store/linktranscriber-api` by default. If `LINK_SKI
 }
 ```
 
-6. Extract `data.task_id` from the creation response.
-7. Poll `GET /api/service/transcriptions/{task_id}` until the task reaches a final successful state.
+7. Extract `data.task_id` from the creation response.
+8. Poll `GET /api/service/transcriptions/{task_id}` until the task reaches a final successful state.
    Keep polling while status is any non-final in-progress value such as:
    `PENDING`, `PARSING`, `DOWNLOADING`, `TRANSCRIBING`, `SUMMARIZING`, `FORMATTING`, `SAVING`.
-8. Call `POST /api/service/summaries` with:
+9. Call `POST /api/service/summaries` with:
 
 ```json
 {
@@ -99,7 +103,7 @@ Use `https://linktranscriber.store/linktranscriber-api` by default. If `LINK_SKI
 }
 ```
 
-9. Return only `data.summary_markdown` to the user.
+10. Return only `data.summary_markdown` to the user.
 
 The public skill should not ask end users to provide platform cookies by default. Cookie handling belongs to the server-side configuration layer.
 
@@ -109,16 +113,24 @@ The public skill should not ask end users to provide platform cookies by default
 - Prefer returning `data.summary_markdown` exactly as produced by the summaries API.
 - Do not return raw transcription payload unless the user explicitly asks for debugging details.
 - Do not add action cards or custom wrappers around the summary.
+- Do not prepend confirmation questions, workflow narration, or tool logs when a supported link was already provided.
+- If the workflow fails, return one short failure message only.
 
 ## Error Handling
 
 - If `url` is missing, ask for the link.
 - If the platform cannot be inferred, ask whether it is `douyin` or `xiaohongshu`.
 - If transcription task creation fails, return the upstream error clearly.
+- If the service is unreachable, TLS handshake fails, or any network call fails, stop and return a short failure message instead of browsing the page and writing a manual summary.
 - If the upstream service reports missing platform cookies, treat that as a server-side configuration issue.
 - If the upstream service reports missing platform cookies, do not redirect that requirement to the end user as the default next step. Explain that the hosted service is missing required cookie configuration.
 - If polling ends in failure, return the task error instead of calling summaries.
 - If summary generation fails, return the upstream summary API error.
+
+Preferred short failure style:
+
+- `转写服务当前不可用，未能完成 link-transcriber 处理，请稍后重试。`
+- `转写服务缺少所需平台配置，未能完成 link-transcriber 处理，请稍后重试。`
 
 ## Example Prompt
 

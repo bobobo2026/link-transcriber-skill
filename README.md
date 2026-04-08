@@ -35,6 +35,9 @@ Operational guardrails:
 - do not swap in a raw server IP for normal public usage
 - if the service reports missing platform cookies, treat that as a hosted-service configuration problem instead of asking the end user for cookies by default
 - poll through all in-progress statuses, not only `PENDING`
+- when the user already pasted a supported link, execute directly instead of asking for confirmation first
+- if the service fails, do not browse the page and write a fallback summary from page snippets
+- final output should be either the summary itself or one short failure message
 
 That narrow workflow is intentional. This public skill stays focused on link-to-summary only.
 
@@ -82,6 +85,7 @@ What the update script does:
 
 - If you previously installed `link-transcriber-skill-public`, run `bash scripts/update_local_skill.sh` to migrate to the canonical local directory.
 - If you invoke Codex from a shell, quote or stdin-wrap prompts that contain `$link-transcriber` so your shell does not expand `$...` before Codex sees it.
+- If the hosted service is unreachable, the correct user-facing result is a short failure message rather than a manually inferred summary from the page.
 
 ## Behavior
 
@@ -93,6 +97,7 @@ What the update script does:
 - Default summaries model: `deepseek-chat`
 - Final user-facing output is only the summary text
 - In-progress task states include `PARSING`, `DOWNLOADING`, `TRANSCRIBING`, `SUMMARIZING`, `FORMATTING`, and `SAVING`
+- Failure behavior should be terse: no tool traces, no confirmation loops, and no substitute summary generated from manual page browsing
 
 ## Local Smoke
 
