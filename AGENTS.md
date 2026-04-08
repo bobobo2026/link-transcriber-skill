@@ -39,6 +39,7 @@ What is already done:
   - default public origin: `https://linktranscriber.store/linktranscriber-api`
   - set `LINK_SKILL_API_BASE_URL` only when an override is required
   - avoid raw IPs and plain HTTP in public copy
+- Xiaohongshu and Douyin cookies are expected to be managed on the hosted service side for production use
 - real API smoke has already succeeded against Xiaohongshu
 - public GitHub repo has already been created and pushed:
   - `https://github.com/bobobo2026/link-transcriber-skill`

@@ -9,6 +9,7 @@ It uses the live linkTranscriber service at:
 - `https://linktranscriber.store/linktranscriber-api`
 
 The service uses server-side saved platform cookies when they are needed. End users do not need to provide cookies to use this skill.
+The hosted service is expected to keep the required platform cookies configured server-side so end users only need to paste a link.
 For local validation and scripted usage, prefer the Python helper scripts in this repo over `curl`, because HTTPS compatibility can vary across system `curl` builds and TLS backends.
 
 For local smoke or a private deployment, you can still override the default:
@@ -78,7 +79,7 @@ bash scripts/update_local_skill.sh
 Pin to a specific version when needed:
 
 ```bash
-bash scripts/update_local_skill.sh 0.1.6
+bash scripts/update_local_skill.sh 0.1.10
 ```
 
 What the update script does:
@@ -92,6 +93,7 @@ What the update script does:
 - If you previously installed `link-transcriber-skill-public`, run `bash scripts/update_local_skill.sh` to migrate to the canonical local directory.
 - If you invoke Codex from a shell, quote or stdin-wrap prompts that contain `$link-transcriber` so your shell does not expand `$...` before Codex sees it.
 - If the hosted service is unreachable, the correct user-facing result is a short failure message rather than a manually inferred summary from the page.
+- Users should not be asked to provide Xiaohongshu or Douyin cookies. If cookie-related failures appear, treat them as hosted-service configuration issues.
 
 ## Behavior
 
