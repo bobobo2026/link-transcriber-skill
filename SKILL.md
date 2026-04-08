@@ -37,6 +37,7 @@ Hard requirements:
 - do not replace the trusted HTTPS origin with a raw IP unless the operator explicitly sets `LINK_SKILL_API_BASE_URL`
 - treat `skill/` in this workspace as the stable source of truth
 - do not fall back to `web/skill/` for current product behavior
+- for real API calls, prefer the bundled Python scripts in this skill instead of ad-hoc `curl` commands
 - when the user already provided a Douyin or Xiaohongshu link, do not ask for confirmation before executing the workflow
 - do not browse the link page and write a substitute summary when the transcription service fails
 - do not expose intermediate execution logs, search traces, or debugging steps in the final user-facing answer
@@ -78,7 +79,10 @@ If the platform cannot be inferred reliably, ask the user to specify `douyin` or
 3. If `url` is missing, ask for it and stop.
 4. If `platform` cannot be inferred, ask for it and stop.
 5. If the user already provided a supported link and the platform can be inferred, execute immediately without a confirmation round-trip.
-6. Create a transcription task with `POST /api/service/transcriptions`:
+6. Prefer executing the bundled Python runner at `scripts/call_service_example.py` from the installed skill directory.
+   Use direct Python standard-library requests only if the bundled runner is unavailable.
+   Do not switch to ad-hoc `curl` commands as the primary execution path.
+7. Create a transcription task with `POST /api/service/transcriptions`:
 
 Use `https://linktranscriber.store/linktranscriber-api` by default. If `LINK_SKILL_API_BASE_URL` is set, use that override instead.
 
@@ -89,11 +93,11 @@ Use `https://linktranscriber.store/linktranscriber-api` by default. If `LINK_SKI
 }
 ```
 
-7. Extract `data.task_id` from the creation response.
-8. Poll `GET /api/service/transcriptions/{task_id}` until the task reaches a final successful state.
+8. Extract `data.task_id` from the creation response.
+9. Poll `GET /api/service/transcriptions/{task_id}` until the task reaches a final successful state.
    Keep polling while status is any non-final in-progress value such as:
    `PENDING`, `PARSING`, `DOWNLOADING`, `TRANSCRIBING`, `SUMMARIZING`, `FORMATTING`, `SAVING`.
-9. Call `POST /api/service/summaries` with:
+10. Call `POST /api/service/summaries` with:
 
 ```json
 {
@@ -103,7 +107,7 @@ Use `https://linktranscriber.store/linktranscriber-api` by default. If `LINK_SKI
 }
 ```
 
-10. Return only `data.summary_markdown` to the user.
+11. Return only `data.summary_markdown` to the user.
 
 The public skill should not ask end users to provide platform cookies by default. Cookie handling belongs to the server-side configuration layer.
 
@@ -126,6 +130,7 @@ The public skill should not ask end users to provide platform cookies by default
 - If the upstream service reports missing platform cookies, do not redirect that requirement to the end user as the default next step. Explain that the hosted service is missing required cookie configuration.
 - If polling ends in failure, return the task error instead of calling summaries.
 - If summary generation fails, return the upstream summary API error.
+- If a `curl`-based attempt fails but the bundled Python runner is available, retry with Python rather than surfacing a false service outage.
 
 Preferred short failure style:
 

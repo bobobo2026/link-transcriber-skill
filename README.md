@@ -17,6 +17,11 @@ For local smoke or a private deployment, you can still override the default:
 - `LINK_SKILL_SUMMARY_PROVIDER_ID` (optional, default `deepseek`)
 - `LINK_SKILL_SUMMARY_MODEL_NAME` (optional, default `deepseek-chat`)
 
+Execution preference:
+
+- use the bundled Python scripts in this skill as the primary hosted-service client
+- do not treat ad-hoc `curl` commands as the canonical execution path
+
 Published ClawHub page:
 
 - `https://clawhub.ai/bobobo2026/link-transcriber`
@@ -108,7 +113,7 @@ Check service health with Python first:
 python3 scripts/check_service_health.py
 ```
 
-Run the example script directly:
+Run the example script directly with Python:
 
 ```bash
 python3 scripts/call_service_example.py 'https://xhslink.com/o/23s4jTem6em'
