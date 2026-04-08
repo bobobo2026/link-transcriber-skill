@@ -34,6 +34,7 @@ What is already done:
   - poll transcription task
   - call summaries API
   - print only final summary text
+- `scripts/check_service_health.py` is the preferred hosted-service health check path for this repo
 - API base URL is intentionally configurable:
   - default public origin: `https://linktranscriber.store/linktranscriber-api`
   - set `LINK_SKILL_API_BASE_URL` only when an override is required
@@ -76,6 +77,7 @@ ClawHub-oriented copy:
 
 Smoke / example runner:
 
+- [scripts/check_service_health.py](/Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts/check_service_health.py)
 - [scripts/call_service_example.py](/Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts/call_service_example.py)
 - [scripts/update_local_skill.sh](/Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts/update_local_skill.sh)
 
@@ -142,6 +144,12 @@ Compile script:
 
 ```bash
 python3 -m compileall /Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts
+```
+
+Check hosted service health:
+
+```bash
+python3 /Users/yibo/Documents/company/IdeaProjects/KnowledgeOS/skill/scripts/check_service_health.py
 ```
 
 Run live smoke:

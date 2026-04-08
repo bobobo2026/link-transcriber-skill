@@ -9,6 +9,7 @@ It uses the live linkTranscriber service at:
 - `https://linktranscriber.store/linktranscriber-api`
 
 The service uses server-side saved platform cookies when they are needed. End users do not need to provide cookies to use this skill.
+For local validation and scripted usage, prefer the Python helper scripts in this repo over `curl`, because HTTPS compatibility can vary across system `curl` builds and TLS backends.
 
 For local smoke or a private deployment, you can still override the default:
 
@@ -101,6 +102,12 @@ What the update script does:
 
 ## Local Smoke
 
+Check service health with Python first:
+
+```bash
+python3 scripts/check_service_health.py
+```
+
 Run the example script directly:
 
 ```bash
@@ -118,6 +125,7 @@ python3 scripts/call_service_example.py 'https://xhslink.com/o/23s4jTem6em'
 
 - `SKILL.md` - canonical skill behavior
 - `agents/openai.yaml` - Codex UI metadata
+- `scripts/check_service_health.py` - Python health check for the hosted service
 - `scripts/call_service_example.py` - transcribe + poll + summarize example
 - `scripts/update_local_skill.sh` - install or refresh the local Codex skill copy
 - `CLAWHUB.md` - ClawHub-oriented publish copy
