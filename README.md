@@ -1,138 +1,114 @@
 # Link Transcriber Skill
 
-`link-transcriber` is a minimal Codex-compatible skill for turning Douyin and Xiaohongshu links into a readable summary as quickly as possible.
+**✨ 一键把抖音 / 小红书链接变成干净、可直接使用的总结**
 
-It is meant to be a free, low-friction entry point: paste a link and get back only the final summary.
+无需自己提供 Cookie —— 服务端已托管好登录态  
+**粘贴链接 → 直接返回最终总结**，不废话、不复制一大堆原始文案
 
-It uses the live linkTranscriber service at:
+专为 OpenClaw / Codex 用户设计，极大降低内容创作者、矩阵运营者的采集成本。
 
-- `https://linktranscriber.store/linktranscriber-api`
+![演示效果](https://github.com/bobobo2026/link-transcriber-skill/raw/main/demo.gif)  
+*(建议录制 15 秒操作演示 GIF 替换此处)*
 
-The service uses server-side saved platform cookies when they are needed. End users do not need to provide cookies to use this skill.
-The hosted service is expected to keep the required platform cookies configured server-side so end users only need to paste a link.
-For local validation and scripted usage, prefer the Python helper scripts in this repo over `curl`, because HTTPS compatibility can vary across system `curl` builds and TLS backends.
+## 🎯 核心优势
 
-For local smoke or a private deployment, you can still override the default:
+- **零配置使用**：用户不需要输入任何 Cookie
+- **服务端托管**：所有 Cookie 在你自己的服务器上，安全可控
+- **专注输出总结**：只返回结构化总结，干净简洁
+- **支持平台**：抖音、小红书（持续新增中）
+- **灵活部署**：支持本地 + 公有服务
 
-- `LINK_SKILL_API_BASE_URL`
-- `LINK_SKILL_SUMMARY_PROVIDER_ID` (optional, default `deepseek`)
-- `LINK_SKILL_SUMMARY_MODEL_NAME` (optional, default `deepseek-chat`)
+## 🚀 快速安装
 
-Execution preference:
-
-- use the bundled Python scripts in this skill as the primary hosted-service client
-- do not treat ad-hoc `curl` commands as the canonical execution path
-
-Published ClawHub page:
-
-- `https://clawhub.ai/bobobo2026/link-transcriber`
-
-The skill workflow is:
-
-1. accept a Douyin or Xiaohongshu link
-2. infer the platform when possible
-3. create a transcription task using the server's saved platform cookies when required
-4. poll until transcription finishes
-5. call the summaries API
-6. return only the final summary text
-
-Operational guardrails:
-
-- the stable public endpoint is `https://linktranscriber.store/linktranscriber-api`
-- do not swap in a raw server IP for normal public usage
-- if the service reports missing platform cookies, treat that as a hosted-service configuration problem instead of asking the end user for cookies by default
-- poll through all in-progress statuses, not only `PENDING`
-- when the user already pasted a supported link, execute directly instead of asking for confirmation first
-- if the service fails, do not browse the page and write a fallback summary from page snippets
-- final output should be either the summary itself or one short failure message
-
-That narrow workflow is intentional. This public skill stays focused on link-to-summary only.
-
-## Install In Codex
-
-Install from this GitHub repository, then restart Codex so it picks up the skill.
-
-You can also open the published ClawHub page:
-
-- `https://clawhub.ai/bobobo2026/link-transcriber`
-
-After installation, use it in natural language:
-
-```text
-Use $link-transcriber to summarize this link: https://xhslink.com/o/23s4jTem6em
+### 方法一：在 OpenClaw / Codex 中直接说（推荐）
+```
+请为我安装 bobobo2026/link-transcriber-skill
 ```
 
-Install directly from ClawHub into the Codex skills directory:
-
+### 方法二：使用 ClawHub CLI
 ```bash
-npx clawhub@latest --workdir ~/.codex --dir skills install link-transcriber --force
+clawhub install bobobo2026/link-transcriber-skill
 ```
 
-## Update
+安装完成后即可直接使用。
 
-Refresh an existing local installation to the latest published version:
+## 📖 使用示例
 
-```bash
-bash scripts/update_local_skill.sh
+**输入**：
+```
+分析这个小红书笔记：https://www.xiaohongshu.com/explore/732xxxxxx
 ```
 
-Pin to a specific version when needed:
+**输出示例**：
+```
+【总结】
+标题：夏天必吃的小龙虾做法，鲜香入味超简单
 
-```bash
-bash scripts/update_local_skill.sh 0.1.10
+核心内容：
+- 选用活虾 + 13 种调料秘制酱汁
+- 关键步骤：冰镇去腥 → 爆香底料 → 大火收汁
+- 时长：准备 15 分钟 + 烹饪 12 分钟
+
+亮点：
+- 口味偏辣鲜，适合下饭
+- 附赠酱汁配方和摆盘技巧
+
+建议用途：美食笔记参考、视频脚本素材、竞品分析
 ```
 
-What the update script does:
-
-- installs the canonical slug `link-transcriber`
-- removes the legacy local directory `~/.codex/skills/link-transcriber-skill-public` if it exists
-- leaves one stable local entrypoint for Codex to discover
-
-## Troubleshooting
-
-- If you previously installed `link-transcriber-skill-public`, run `bash scripts/update_local_skill.sh` to migrate to the canonical local directory.
-- If you invoke Codex from a shell, quote or stdin-wrap prompts that contain `$link-transcriber` so your shell does not expand `$...` before Codex sees it.
-- If the hosted service is unreachable, the correct user-facing result is a short failure message rather than a manually inferred summary from the page.
-- Users should not be asked to provide Xiaohongshu or Douyin cookies. If cookie-related failures appear, treat them as hosted-service configuration issues.
-
-## Behavior
-
-- Supports Douyin and Xiaohongshu
-- Uses server-side saved platform cookies when needed
-- Platform is inferred from the URL when possible
-- Built for quick first-use value and easy sharing
-- Default summaries provider: `deepseek`
-- Default summaries model: `deepseek-chat`
-- Final user-facing output is only the summary text
-- In-progress task states include `PARSING`, `DOWNLOADING`, `TRANSCRIBING`, `SUMMARIZING`, `FORMATTING`, and `SAVING`
-- Failure behavior should be terse: no tool traces, no confirmation loops, and no substitute summary generated from manual page browsing
-
-## Local Smoke
-
-Check service health with Python first:
-
-```bash
-python3 scripts/check_service_health.py
+**批量示例**：
+```
+批量分析下面这些链接并生成选题建议：
+1. https://v.douyin.com/xxxx
+2. https://www.xiaohongshu.com/explore/yyyy
 ```
 
-Run the example script directly with Python:
+## 🛠️ 如何工作（技术原理）
 
-```bash
-python3 scripts/call_service_example.py 'https://xhslink.com/o/23s4jTem6em'
+1. 用户输入链接 → Skill 解析平台和视频/笔记 ID
+2. 通过服务端已保存的 Cookie 访问平台页面
+3. 调用转录服务提取文字内容
+4. 大模型进行结构化总结 + 提取亮点
+5. 返回干净结果
+
+所有敏感操作均在服务端完成，用户端零风险。
+
+## ⚙️ 配置与部署
+
+### 环境变量（推荐设置）
+```env
+LINK_TRANSCRIBER_COOKIE_XXHS=你的小红书Cookie
+LINK_TRANSCRIBER_COOKIE_DOUYIN=你的抖音Cookie
+LINK_TRANSCRIBER_MODEL=gemini-2.5-pro   # 或你喜欢的模型
 ```
 
-Override the API base URL if needed:
+详细部署教程请看 [docs/DEPLOY.md](docs/DEPLOY.md)
 
-```bash
-LINK_SKILL_API_BASE_URL=https://linktranscriber.store/linktranscriber-api \
-python3 scripts/call_service_example.py 'https://xhslink.com/o/23s4jTem6em'
-```
+## 🔒 安全说明
 
-## Files
+- Cookie 仅用于转录，不用于其他操作
+- 支持本地完全私有部署
+- 不收集任何用户数据
 
-- `SKILL.md` - canonical skill behavior
-- `agents/openai.yaml` - Codex UI metadata
-- `scripts/check_service_health.py` - Python health check for the hosted service
-- `scripts/call_service_example.py` - transcribe + poll + summarize example
-- `scripts/update_local_skill.sh` - install or refresh the local Codex skill copy
-- `CLAWHUB.md` - ClawHub-oriented publish copy
+## 📈 更新计划
+
+- [ ] 支持快手、视频号、B站
+- [ ] 批量处理 + 自动生成笔记草稿
+- [ ] 一键导出 Markdown / Word
+- [ ] 更多输出模板（爆款笔记结构、竞品分析等）
+
+## ⭐ 支持一下
+
+如果你觉得这个 Skill 有帮助，欢迎：
+
+- 点个 Star ⭐
+- 在 ClawHub 页面留下评价
+- 分享给其他 OpenClaw 用户
+
+有任何问题或功能建议，欢迎在 Issues 中提出！
+
+---
+
+**作者**：bobobo2026  
+**版本**：v0.1.5  
+**协议**：MIT
